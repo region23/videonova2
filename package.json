@@ -3,12 +3,16 @@
   "private": true,
   "version": "0.0.0",
   "type": "commonjs",
+  "main": "main.js",
   "scripts": {
-    "dev": "concurrently \"vite -c vite.renderer.config.ts\" \"wait-on http://localhost:5173 && electron-forge start\"",
-    "build": "electron-forge make",
+    "dev": "vite build -c vite.main.config.ts && vite build -c vite.preload.config.ts && concurrently \"vite -c vite.renderer.config.ts\" \"wait-on http://localhost:5173 && electron-forge start\"",
+    "build": "vite build -c vite.main.config.ts && vite build -c vite.preload.config.ts && vite build -c vite.renderer.config.ts && electron-forge make",
+    "build:all": "NODE_ENV=production vite build -c vite.main.config.ts && vite build -c vite.preload.config.ts && vite build -c vite.renderer.config.ts",
+    "start:prod": "NODE_ENV=production npm run direct",
     "lint": "eslint .",
     "preview": "vite preview",
     "start": "electron-forge start",
+    "direct": "node start-app.js",
     "package": "electron-forge package",
     "make": "electron-forge make"
   },

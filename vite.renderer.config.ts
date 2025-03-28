@@ -6,21 +6,24 @@ import { resolve } from 'path';
 export default defineConfig({
   plugins: [react()],
   base: './',
+  root: resolve(__dirname, 'src/renderer'),
+  publicDir: resolve(__dirname, 'public'),
   build: {
-    outDir: 'out/renderer',
+    outDir: resolve(__dirname, 'out/renderer'),
     emptyOutDir: true,
     rollupOptions: {
       external: [
         ...builtinModules.flatMap(p => [p, `node:${p}`]),
       ],
-      input: {
-        index: resolve(__dirname, 'src/renderer/index.html'),
-      },
     },
   },
   resolve: {
     alias: {
-      'assets': resolve(__dirname, 'src/renderer/assets'),
+      '@renderer': resolve(__dirname, 'src/renderer'),
+      '@components': resolve(__dirname, 'src/components'),
+      '@utils': resolve(__dirname, 'src/utils'),
+      '@styles': resolve(__dirname, 'src/styles'),
+      '@shared': resolve(__dirname, 'src/shared'),
     },
   },
 }); 
