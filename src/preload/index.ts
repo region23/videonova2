@@ -11,7 +11,13 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getSetting: (key) => ipcRenderer.invoke(Channels.GET_SETTING, key),
   setSetting: (key, value) => ipcRenderer.invoke(Channels.SET_SETTING, key, value),
   getSettings: () => ipcRenderer.invoke(Channels.GET_SETTINGS),
-  // Expose other methods here
+  
+  // Dependency management methods
+  getDependencyPaths: () => ipcRenderer.invoke(Channels.GET_DEPENDENCY_PATHS),
+  validateDependencies: () => ipcRenderer.invoke(Channels.VALIDATE_DEPENDENCIES),
+  findPythonPath: () => ipcRenderer.invoke(Channels.FIND_PYTHON_PATH),
+  checkPythonPackages: (packages) => ipcRenderer.invoke(Channels.CHECK_PYTHON_PACKAGES, packages),
+  setDependencyPath: (dependency, path) => ipcRenderer.invoke(Channels.SET_DEPENDENCY_PATH, dependency, path),
 } as IElectronAPI);
 
 // For security reasons, we don't expose the entire ipcRenderer object

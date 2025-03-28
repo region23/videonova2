@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { Channels } from '../shared/ipc-types';
 import { getSetting, setSetting, getSettings } from './services/settingsManager';
+import { initializeDependencies, getDependencyPaths, validateDependencies, findPythonPath, checkPythonPackages, setDependencyPath } from './services/dependencyManager';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (require('electron-squirrel-startup')) app.quit();
@@ -25,6 +26,28 @@ const setupIpcHandlers = () => {
 
   ipcMain.handle(Channels.GET_SETTINGS, () => {
     return getSettings();
+  });
+  
+  // Dependency management handlers
+  ipcMain.handle(Channels.GET_DEPENDENCY_PATHS, () => {
+    return getDependencyPaths();
+  });
+  
+  ipcMain.handle(Channels.VALIDATE_DEPENDENCIES, () => {
+    return validateDependencies();
+  });
+  
+  ipcMain.handle(Channels.FIND_PYTHON_PATH, () => {
+    return findPythonPath();
+  });
+  
+  ipcMain.handle(Channels.CHECK_PYTHON_PACKAGES, (_event, packages: string[]) => {
+    return checkPythonPackages(packages);
+  });
+  
+  ipcMain.handle(Channels.SET_DEPENDENCY_PATH, (_event, dependency: 'python' | 'soundtouch', path: string) => {
+    setDependencyPath(dependency, path);
+    return validateDependencies();
   });
   
   // Add other handlers here
@@ -75,7 +98,10 @@ const createWindow = () => {
   }
 };
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Initialize dependencies
+  await initializeDependencies();
+  
   // Set up IPC handlers before creating the window
   setupIpcHandlers();
   
