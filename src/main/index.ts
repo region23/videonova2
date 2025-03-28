@@ -5,9 +5,32 @@ import { Channels } from '../shared/ipc-types';
 import { getSetting, setSetting, getSettings } from './services/settingsManager';
 import { initializeDependencies, getDependencyPaths, validateDependencies, findPythonPath, checkPythonPackages, setDependencyPath } from './services/dependencyManager';
 import { ytDlpService } from './services/ytDlpService';
+import { OpenAIClient } from './services/openAiClient';
+import { SynthesisOptions } from '../shared/ai-services';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (require('electron-squirrel-startup')) app.quit();
+
+// Singleton OpenAI client
+let openAIClient: OpenAIClient | null = null;
+
+// Initialize OpenAI client with API key from settings
+const getOpenAIClient = async () => {
+  if (openAIClient === null) {
+    const apiKey = await getSetting<string>('openai.apiKey');
+    if (!apiKey) {
+      throw new Error('OpenAI API key not set. Please set it in settings.');
+    }
+    openAIClient = new OpenAIClient(apiKey);
+    
+    // Set default model if it exists in settings
+    const defaultModel = await getSetting<string>('openai.defaultModel');
+    if (defaultModel) {
+      openAIClient.setDefaultModel(defaultModel);
+    }
+  }
+  return openAIClient;
+};
 
 // Set up IPC handlers
 const setupIpcHandlers = () => {
@@ -85,6 +108,40 @@ const setupIpcHandlers = () => {
           sender.send(Channels.DOWNLOAD_PROGRESS, { component, progress });
         }
       );
+  });
+  
+  // OpenAI handlers
+  ipcMain.handle(Channels.TRANSCRIBE_AUDIO, async (_event, audioPath: string, language?: string) => {
+    const client = await getOpenAIClient();
+    return client.transcribe(audioPath, language);
+  });
+  
+  ipcMain.handle(Channels.TRANSLATE_TEXT, async (_event, text: string, targetLang: string, sourceLang?: string) => {
+    const client = await getOpenAIClient();
+    return client.translate(text, targetLang, sourceLang);
+  });
+  
+  ipcMain.handle(Channels.SYNTHESIZE_SPEECH, async (_event, text: string, options: SynthesisOptions, outputPath: string) => {
+    const client = await getOpenAIClient();
+    return client.synthesize(text, options, outputPath);
+  });
+  
+  ipcMain.handle(Channels.SET_OPENAI_API_KEY, async (_event, apiKey: string) => {
+    await setSetting('openai.apiKey', apiKey);
+    
+    // If client exists, update its API key, otherwise it will be created with the new key on next use
+    if (openAIClient) {
+      openAIClient.setApiKey(apiKey);
+    }
+  });
+  
+  ipcMain.handle(Channels.SET_OPENAI_DEFAULT_MODEL, async (_event, model: string) => {
+    await setSetting('openai.defaultModel', model);
+    
+    // If client exists, update its default model
+    if (openAIClient) {
+      openAIClient.setDefaultModel(model);
+    }
   });
   
   // Add other handlers here

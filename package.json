@@ -23,6 +23,8 @@
     "electron-squirrel-startup": "^1.0.1",
     "electron-store": "^10.0.1",
     "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
+    "openai": "^4.90.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "yt-dlp-wrap": "^2.3.12"

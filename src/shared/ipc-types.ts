@@ -3,6 +3,7 @@
 // Import types from dependency manager
 import { DependencyPaths } from '../main/services/dependencyManager';
 import { YtDlpVideoInfo } from '../main/services/ytDlpService';
+import { TranscriptionResult, TranslationResult, SynthesisOptions } from './ai-services';
 
 export interface IElectronAPI {
   getAppVersion: () => Promise<string>;
@@ -34,6 +35,13 @@ export interface IElectronAPI {
     subtitlePath: string | null;
     info: YtDlpVideoInfo;
   }>;
+  
+  // OpenAI methods
+  transcribeAudio: (audioPath: string, language?: string) => Promise<TranscriptionResult>;
+  translateText: (text: string, targetLang: string, sourceLang?: string) => Promise<TranslationResult>;
+  synthesizeSpeech: (text: string, options: SynthesisOptions, outputPath: string) => Promise<string>;
+  setOpenAIApiKey: (apiKey: string) => Promise<void>;
+  setOpenAIDefaultModel: (model: string) => Promise<void>;
 }
 
 export const Channels = {
@@ -58,6 +66,13 @@ export const Channels = {
   GET_BEST_FORMATS: 'ipc:get-best-formats',
   DOWNLOAD_HIGH_QUALITY_COMPONENTS: 'ipc:download-high-quality-components',
   DOWNLOAD_PROGRESS: 'ipc:download-progress',
+  
+  // OpenAI channels
+  TRANSCRIBE_AUDIO: 'ipc:transcribe-audio',
+  TRANSLATE_TEXT: 'ipc:translate-text',
+  SYNTHESIZE_SPEECH: 'ipc:synthesize-speech',
+  SET_OPENAI_API_KEY: 'ipc:set-openai-api-key',
+  SET_OPENAI_DEFAULT_MODEL: 'ipc:set-openai-default-model',
 } as const; // Use const assertion for type safety
 
 // Type for channel names to ensure type safety when using channels

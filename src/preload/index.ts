@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { Channels, IElectronAPI } from '../shared/ipc-types';
+import { SynthesisOptions } from '../shared/ai-services';
 
 /**
  * Exposes specific Electron API functions to the renderer process
@@ -33,6 +34,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke(Channels.GET_BEST_FORMATS, url),
   downloadHighQualityComponents: (url: string, outputDir: string, basename: string) => 
     ipcRenderer.invoke(Channels.DOWNLOAD_HIGH_QUALITY_COMPONENTS, url, outputDir, basename),
+    
+  // OpenAI methods
+  transcribeAudio: (audioPath: string, language?: string) => 
+    ipcRenderer.invoke(Channels.TRANSCRIBE_AUDIO, audioPath, language),
+  translateText: (text: string, targetLang: string, sourceLang?: string) => 
+    ipcRenderer.invoke(Channels.TRANSLATE_TEXT, text, targetLang, sourceLang),
+  synthesizeSpeech: (text: string, options: SynthesisOptions, outputPath: string) => 
+    ipcRenderer.invoke(Channels.SYNTHESIZE_SPEECH, text, options, outputPath),
+  setOpenAIApiKey: (apiKey: string) => 
+    ipcRenderer.invoke(Channels.SET_OPENAI_API_KEY, apiKey),
+  setOpenAIDefaultModel: (model: string) => 
+    ipcRenderer.invoke(Channels.SET_OPENAI_DEFAULT_MODEL, model),
 } as IElectronAPI);
 
 // For security reasons, we don't expose the entire ipcRenderer object
