@@ -1,0 +1,53 @@
+.app-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f0f2f5;
+}
+
+.app-card {
+  width: 100%;
+  max-width: 600px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Custom styles for form elements */
+.app-input-group {
+  margin-bottom: 20px;
+}
+
+.app-button-primary {
+  background-color: #1677ff;
+  width: 100%;
+}
+
+.progress-list {
+  margin: 20px 0;
+}
+
+.progress-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.progress-icon {
+  margin-right: 12px;
+  color: #1677ff;
+}
+
+.app-divider {
+  margin: 24px 0;
+}
+
+.result-message {
+  margin: 24px 0;
+  font-size: 16px;
+}
+
+.open-button {
+  width: 100%;
+} 

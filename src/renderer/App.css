@@ -1,8 +1,50 @@
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  height: 100vh;
+}
+
+/* Additional component-specific styles can go here */
+.app-input-group {
+  margin-bottom: 16px;
+}
+
+/* Override Ant Design styles as needed */
+.ant-card-body {
+  padding: 24px;
+}
+
+.ant-divider {
+  margin: 16px 0;
+}
+
+.ant-select {
+  width: 100%;
+}
+
+.ant-btn-primary {
+  background-color: #1677ff;
+}
+
+/* Progress list styles */
+.progress-item {
+  margin-bottom: 10px;
+}
+
+.progress-icon {
+  font-size: 18px;
+  margin-right: 10px;
+  color: #1677ff;
+}
+
+.result-message {
+  display: block;
+  margin: 20px 0;
+  font-size: 16px;
+}
+
+.open-button {
+  width: 100%;
+  margin-top: 10px;
 }
 
 .logo {
