@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current Phase
-According to the implementation plan, we have completed **Phase 0: Initialization** and are now moving to **Phase 1: Backend Integration**.
+According to the implementation plan, we have completed **Phase 1: Backend Integration** and are now moving to **Phase 2: Basic UI Components**.
 
 ## Recent Decisions
 
@@ -24,45 +24,56 @@ According to the implementation plan, we have completed **Phase 0: Initializatio
    - Support for both online and offline processing
    - Caching of intermediate results
 
+4. **Backend Integration Implementation**:
+   - Successfully implemented wrapper services for external tools
+   - Created interface-based design for all processing steps
+   - Established secure IPC communication between frontend and backend
+   - Set up dependency management for external tools
+
 ## Current Focus
 
-The current focus has shifted to **Backend Integration** (Phase 1):
+The current focus has shifted to **Frontend Basic UI** (Phase 2):
 
-1. Create wrapper modules for external tools (yt-dlp, ffmpeg)
-2. Establish integration with online AI services (OpenAI)
-3. Define interfaces for processing services
-4. Prepare wrappers for audio processing tools (Demucs, Soundtouch)
+1. Design and implement the main application layout and navigation
+2. Create project management interface (create/open/save)
+3. Develop video import and preview functionality
+4. Implement basic settings UI for API keys and preferences
+5. Build transcription and translation editor interfaces
 
 ## Next Steps
 
 The immediate next steps according to the plan are:
 
-1. **Implement Step 1.1**: Define strategy for external CLI dependencies
-2. **Implement Step 1.2**: Create yt-dlp wrapper service
-3. **Implement Step 1.3**: Create FFmpeg wrapper service
-4. **Implement Step 1.4**: Implement online AI service client (OpenAI)
-5. **Implement Step 1.5**: Define interfaces for processing services
-6. **Implement Step 1.6**: Create placeholder wrappers for Demucs & Soundtouch
-7. **Implement Step 1.7**: Expose backend services via IPC
+1. **Implement Step 2.1**: Create main application layout with navigation
+2. **Implement Step 2.2**: Develop project creation and management
+3. **Implement Step 2.3**: Build video import and preview components
+4. **Implement Step 2.4**: Create settings interface
+5. **Implement Step 2.5**: Develop transcription editor
+6. **Implement Step 2.6**: Build translation editor
+7. **Implement Step 2.7**: Create voice selection interface
 
 ## Active Considerations
 
-1. **External Dependencies**:
-   - How to handle installation and packaging of external tools (ffmpeg, yt-dlp)
-   - Managing Python dependencies for Demucs and other Python-based tools
-   - Cross-platform compatibility for dependencies
+1. **User Experience**:
+   - Intuitive workflow for video processing tasks
+   - Clear progress indication for long-running operations
+   - Responsive UI that doesn't block during processing
+   - Consistent design language using Ant Design components
 
-2. **API Integration**:
-   - Secure storage of API keys
-   - Error handling for API calls
-   - Rate limiting and quota management
+2. **Project Management**:
+   - Project file format and structure
+   - Saving and loading project state
+   - Managing media assets within projects
+   - Version compatibility
 
-3. **Process Management**:
-   - Efficiently handling child processes for CLI tools
-   - Progress reporting from long-running processes
-   - Error handling and recovery from process failures
+3. **Media Handling**:
+   - Efficient video preview mechanisms
+   - Audio visualization for transcription editing
+   - Media player controls and synchronization
+   - Handling large media files efficiently
 
-4. **Interface Design**:
-   - Creating flexible interfaces that support both online and offline implementations
-   - Ensuring proper type safety throughout the application
-   - Designing for future extensibility 
+4. **Editor Functionality**:
+   - Word-level editing for transcriptions
+   - Segment-based translation workflow
+   - Time synchronization between video and text
+   - Voice and language selection interfaces 

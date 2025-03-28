@@ -7,12 +7,18 @@ import { initializeDependencies, getDependencyPaths, validateDependencies, findP
 import { ytDlpService } from './services/ytDlpService';
 import { OpenAIClient } from './services/openAiClient';
 import { SynthesisOptions } from '../shared/ai-services';
+import { DemucsService } from './services/demucsService';
+import { SoundTouchService } from './services/soundtouchService';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (require('electron-squirrel-startup')) app.quit();
 
 // Singleton OpenAI client
 let openAIClient: OpenAIClient | null = null;
+
+// Singleton instances for Demucs and SoundTouch services
+const demucsService = new DemucsService();
+const soundTouchService = new SoundTouchService();
 
 // Initialize OpenAI client with API key from settings
 const getOpenAIClient = async () => {
@@ -142,6 +148,16 @@ const setupIpcHandlers = () => {
     if (openAIClient) {
       openAIClient.setDefaultModel(model);
     }
+  });
+  
+  // Demucs handler
+  ipcMain.handle(Channels.SEPARATE_VOCALS, async (_event, audioPath: string, outputDir: string) => {
+    return demucsService.separateVocals(audioPath, outputDir);
+  });
+  
+  // SoundTouch handler
+  ipcMain.handle(Channels.ADJUST_TIMING, async (_event, audioPath: string, factor: number, outputPath: string) => {
+    return soundTouchService.adjustTiming(audioPath, factor, outputPath);
   });
   
   // Add other handlers here

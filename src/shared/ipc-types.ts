@@ -4,6 +4,7 @@
 import { DependencyPaths } from '../main/services/dependencyManager';
 import { YtDlpVideoInfo } from '../main/services/ytDlpService';
 import { TranscriptionResult, TranslationResult, SynthesisOptions } from './ai-services';
+import { SeparationResult } from './processing-interfaces';
 
 export interface IElectronAPI {
   getAppVersion: () => Promise<string>;
@@ -42,6 +43,12 @@ export interface IElectronAPI {
   synthesizeSpeech: (text: string, options: SynthesisOptions, outputPath: string) => Promise<string>;
   setOpenAIApiKey: (apiKey: string) => Promise<void>;
   setOpenAIDefaultModel: (model: string) => Promise<void>;
+  
+  // Demucs methods
+  separateVocals: (audioPath: string, outputDir: string) => Promise<SeparationResult>;
+  
+  // SoundTouch methods
+  adjustTiming: (audioPath: string, factor: number, outputPath: string) => Promise<string>;
 }
 
 export const Channels = {
@@ -73,6 +80,12 @@ export const Channels = {
   SYNTHESIZE_SPEECH: 'ipc:synthesize-speech',
   SET_OPENAI_API_KEY: 'ipc:set-openai-api-key',
   SET_OPENAI_DEFAULT_MODEL: 'ipc:set-openai-default-model',
+  
+  // Demucs channels
+  SEPARATE_VOCALS: 'ipc:separate-vocals',
+  
+  // SoundTouch channels
+  ADJUST_TIMING: 'ipc:adjust-timing',
 } as const; // Use const assertion for type safety
 
 // Type for channel names to ensure type safety when using channels

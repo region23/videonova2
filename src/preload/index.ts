@@ -46,6 +46,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.invoke(Channels.SET_OPENAI_API_KEY, apiKey),
   setOpenAIDefaultModel: (model: string) => 
     ipcRenderer.invoke(Channels.SET_OPENAI_DEFAULT_MODEL, model),
+    
+  // Demucs methods
+  separateVocals: (audioPath: string, outputDir: string) => 
+    ipcRenderer.invoke(Channels.SEPARATE_VOCALS, audioPath, outputDir),
+    
+  // SoundTouch methods
+  adjustTiming: (audioPath: string, factor: number, outputPath: string) => 
+    ipcRenderer.invoke(Channels.ADJUST_TIMING, audioPath, factor, outputPath),
 } as IElectronAPI);
 
 // For security reasons, we don't expose the entire ipcRenderer object
