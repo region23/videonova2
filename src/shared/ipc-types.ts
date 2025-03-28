@@ -2,6 +2,7 @@
 
 // Import types from dependency manager
 import { DependencyPaths } from '../main/services/dependencyManager';
+import { YtDlpVideoInfo } from '../main/services/ytDlpService';
 
 export interface IElectronAPI {
   getAppVersion: () => Promise<string>;
@@ -16,6 +17,23 @@ export interface IElectronAPI {
   findPythonPath: () => Promise<string | null>;
   checkPythonPackages: (packages: string[]) => Promise<{ installed: string[]; missing: string[] }>;
   setDependencyPath: (dependency: 'python' | 'soundtouch', path: string) => Promise<{ valid: boolean; missing: string[] }>;
+  
+  // yt-dlp methods
+  getVideoInfo: (url: string) => Promise<YtDlpVideoInfo>;
+  downloadMedia: (url: string, formatCode: string, outputPath: string) => Promise<string>;
+  downloadAudio: (url: string, outputPath: string) => Promise<string>;
+  downloadSubtitles: (url: string, language: string, outputPath: string) => Promise<string | null>;
+  getBestFormats: (url: string) => Promise<{ videoFormatId: string, audioFormatId: string }>;
+  downloadHighQualityComponents: (
+    url: string, 
+    outputDir: string, 
+    basename: string
+  ) => Promise<{
+    videoPath: string;
+    audioPath: string;
+    subtitlePath: string | null;
+    info: YtDlpVideoInfo;
+  }>;
 }
 
 export const Channels = {
@@ -31,6 +49,15 @@ export const Channels = {
   FIND_PYTHON_PATH: 'ipc:find-python-path',
   CHECK_PYTHON_PACKAGES: 'ipc:check-python-packages',
   SET_DEPENDENCY_PATH: 'ipc:set-dependency-path',
+  
+  // yt-dlp channels
+  GET_VIDEO_INFO: 'ipc:get-video-info',
+  DOWNLOAD_MEDIA: 'ipc:download-media',
+  DOWNLOAD_AUDIO: 'ipc:download-audio',
+  DOWNLOAD_SUBTITLES: 'ipc:download-subtitles',
+  GET_BEST_FORMATS: 'ipc:get-best-formats',
+  DOWNLOAD_HIGH_QUALITY_COMPONENTS: 'ipc:download-high-quality-components',
+  DOWNLOAD_PROGRESS: 'ipc:download-progress',
 } as const; // Use const assertion for type safety
 
 // Type for channel names to ensure type safety when using channels

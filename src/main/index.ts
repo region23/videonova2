@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import { Channels } from '../shared/ipc-types';
 import { getSetting, setSetting, getSettings } from './services/settingsManager';
 import { initializeDependencies, getDependencyPaths, validateDependencies, findPythonPath, checkPythonPackages, setDependencyPath } from './services/dependencyManager';
+import { ytDlpService } from './services/ytDlpService';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (require('electron-squirrel-startup')) app.quit();
@@ -48,6 +49,42 @@ const setupIpcHandlers = () => {
   ipcMain.handle(Channels.SET_DEPENDENCY_PATH, (_event, dependency: 'python' | 'soundtouch', path: string) => {
     setDependencyPath(dependency, path);
     return validateDependencies();
+  });
+  
+  // yt-dlp handlers
+  ipcMain.handle(Channels.GET_VIDEO_INFO, (_event, url: string) => {
+    return ytDlpService.getVideoInfo(url);
+  });
+  
+  ipcMain.handle(Channels.DOWNLOAD_MEDIA, (_event, url: string, formatCode: string, outputPath: string) => {
+    return ytDlpService.downloadMedia(url, formatCode, outputPath);
+  });
+  
+  ipcMain.handle(Channels.DOWNLOAD_AUDIO, (_event, url: string, outputPath: string) => {
+    return ytDlpService.downloadAudio(url, outputPath);
+  });
+  
+  ipcMain.handle(Channels.DOWNLOAD_SUBTITLES, (_event, url: string, language: string, outputPath: string) => {
+    return ytDlpService.downloadSubtitles(url, language, outputPath);
+  });
+  
+  ipcMain.handle(Channels.GET_BEST_FORMATS, (_event, url: string) => {
+    return ytDlpService.getBestFormats(url);
+  });
+  
+  ipcMain.handle(Channels.DOWNLOAD_HIGH_QUALITY_COMPONENTS, 
+    async (_event, url: string, outputDir: string, basename: string) => {
+      const sender = _event.sender;
+      
+      return ytDlpService.downloadHighQualityComponents(
+        url, 
+        outputDir, 
+        basename,
+        (component, progress) => {
+          // Send progress updates to renderer
+          sender.send(Channels.DOWNLOAD_PROGRESS, { component, progress });
+        }
+      );
   });
   
   // Add other handlers here
