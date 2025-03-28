@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Channels } from '../shared/ipc-types';
+import { getSetting, setSetting, getSettings } from './services/settingsManager';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (require('electron-squirrel-startup')) app.quit();
@@ -11,6 +12,19 @@ const setupIpcHandlers = () => {
   // Handler for getting app version
   ipcMain.handle(Channels.GET_APP_VERSION, () => {
     return app.getVersion();
+  });
+  
+  // Settings handlers
+  ipcMain.handle(Channels.GET_SETTING, (_event, key: string) => {
+    return getSetting(key);
+  });
+
+  ipcMain.handle(Channels.SET_SETTING, (_event, key: string, value: any) => {
+    setSetting(key, value);
+  });
+
+  ipcMain.handle(Channels.GET_SETTINGS, () => {
+    return getSettings();
   });
   
   // Add other handlers here

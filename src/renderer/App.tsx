@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Input, Button, Typography, Divider, Select, Checkbox } from 'antd';
-import { CheckCircleFilled } from '@ant-design/icons';
+import { CheckCircleFilled, SettingOutlined } from '@ant-design/icons';
 import AppLayout from './components/Layout';
+import { Settings } from './components/Settings';
 import './App.css';
+import './styles/Settings.css';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -12,6 +14,8 @@ function App() {
   const [fromLanguage, setFromLanguage] = useState('English');
   const [toLanguage, setToLanguage] = useState('Russian');
   const [processing, setProcessing] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [progress, setProgress] = useState({
     downloadingVideo: false,
     downloadingAudio: false,
@@ -19,6 +23,24 @@ function App() {
     convertingToSubtitles: false,
   });
   const [completed, setCompleted] = useState(false);
+
+  // Load theme from settings when component mounts
+  useEffect(() => {
+    const loadTheme = async () => {
+      try {
+        const savedTheme = await window.electronAPI.getSetting<'light' | 'dark'>('theme');
+        if (savedTheme) {
+          setTheme(savedTheme);
+          // Apply theme to body element
+          document.body.className = savedTheme === 'dark' ? 'dark-theme' : '';
+        }
+      } catch (error) {
+        console.error('Failed to load theme setting:', error);
+      }
+    };
+    
+    loadTheme();
+  }, []);
 
   const handleTranslate = () => {
     if (!videoUrl) return;
@@ -49,89 +71,102 @@ function App() {
 
   return (
     <AppLayout>
-      <Title level={2}>Language Translate</Title>
-      
-      <div className="app-input-group">
-        <Input
-          placeholder="https://www.example.com/video"
-          value={videoUrl}
-          onChange={(e) => setVideoUrl(e.target.value)}
-          style={{ width: 'calc(100% - 130px)', marginRight: '10px' }}
-        />
-        <Button 
-          type="primary" 
-          onClick={handleTranslate}
-          disabled={processing || !videoUrl}
-          style={{ width: '120px' }}
-        >
-          Translate
-        </Button>
-      </div>
-      
-      <Text strong>Translate language: {toLanguage}</Text>
-      
-      <Divider className="app-divider" />
-      
-      <div style={{ display: 'flex' }}>
-        <div style={{ flex: 1 }}>
-          <div className="app-input-group">
-            <Text>Translate from:</Text>
-            <Select 
-              value={fromLanguage} 
-              onChange={setFromLanguage}
-              style={{ width: '100%', marginTop: '8px' }}
-            >
-              <Option value="English">English</Option>
-              <Option value="Spanish">Spanish</Option>
-              <Option value="French">French</Option>
-              <Option value="German">German</Option>
-              <Option value="Chinese">Chinese</Option>
-            </Select>
+      {showSettings ? (
+        <Settings onClose={() => setShowSettings(false)} />
+      ) : (
+        <>
+          <div className="app-header">
+            <Title level={2}>Language Translate</Title>
+            <Button 
+              icon={<SettingOutlined />} 
+              onClick={() => setShowSettings(true)}
+              type="text"
+            />
           </div>
           
           <div className="app-input-group">
-            <Text>Translate to:</Text>
-            <Select 
-              value={toLanguage} 
-              onChange={setToLanguage}
-              style={{ width: '100%', marginTop: '8px' }}
+            <Input
+              placeholder="https://www.example.com/video"
+              value={videoUrl}
+              onChange={(e) => setVideoUrl(e.target.value)}
+              style={{ width: 'calc(100% - 130px)', marginRight: '10px' }}
+            />
+            <Button 
+              type="primary" 
+              onClick={handleTranslate}
+              disabled={processing || !videoUrl}
+              style={{ width: '120px' }}
             >
-              <Option value="Russian">Russian</Option>
-              <Option value="English">English</Option>
-              <Option value="Spanish">Spanish</Option>
-              <Option value="French">French</Option>
-              <Option value="German">German</Option>
-              <Option value="Chinese">Chinese</Option>
-            </Select>
+              Translate
+            </Button>
           </div>
-        </div>
-        
-        <div style={{ flex: 1, marginLeft: '30px' }}>
-          <div className="progress-list">
-            <div className="progress-item">
-              {progress.downloadingVideo && <CheckCircleFilled className="progress-icon" />}
-              <Text>Downloading video</Text>
+          
+          <Text strong>Translate language: {toLanguage}</Text>
+          
+          <Divider className="app-divider" />
+          
+          <div style={{ display: 'flex' }}>
+            <div style={{ flex: 1 }}>
+              <div className="app-input-group">
+                <Text>Translate from:</Text>
+                <Select 
+                  value={fromLanguage} 
+                  onChange={setFromLanguage}
+                  style={{ width: '100%', marginTop: '8px' }}
+                >
+                  <Option value="English">English</Option>
+                  <Option value="Spanish">Spanish</Option>
+                  <Option value="French">French</Option>
+                  <Option value="German">German</Option>
+                  <Option value="Chinese">Chinese</Option>
+                </Select>
+              </div>
+              
+              <div className="app-input-group">
+                <Text>Translate to:</Text>
+                <Select 
+                  value={toLanguage} 
+                  onChange={setToLanguage}
+                  style={{ width: '100%', marginTop: '8px' }}
+                >
+                  <Option value="Russian">Russian</Option>
+                  <Option value="English">English</Option>
+                  <Option value="Spanish">Spanish</Option>
+                  <Option value="French">French</Option>
+                  <Option value="German">German</Option>
+                  <Option value="Chinese">Chinese</Option>
+                </Select>
+              </div>
             </div>
-            <div className="progress-item">
-              {progress.downloadingAudio && <CheckCircleFilled className="progress-icon" />}
-              <Text>Downloading audio</Text>
-            </div>
-            <div className="progress-item">
-              {progress.separatingSpeech && <CheckCircleFilled className="progress-icon" />}
-              <Text>Separating speech and noise</Text>
-            </div>
-            <div className="progress-item">
-              {progress.convertingToSubtitles && <CheckCircleFilled className="progress-icon" />}
-              <Text>Converting audio to subtitles</Text>
+            
+            <div style={{ flex: 1, marginLeft: '30px' }}>
+              <div className="progress-list">
+                <div className="progress-item">
+                  {progress.downloadingVideo && <CheckCircleFilled className="progress-icon" />}
+                  <Text>Downloading video</Text>
+                </div>
+                <div className="progress-item">
+                  {progress.downloadingAudio && <CheckCircleFilled className="progress-icon" />}
+                  <Text>Downloading audio</Text>
+                </div>
+                <div className="progress-item">
+                  {progress.separatingSpeech && <CheckCircleFilled className="progress-icon" />}
+                  <Text>Separating speech and noise</Text>
+                </div>
+                <div className="progress-item">
+                  {progress.convertingToSubtitles && <CheckCircleFilled className="progress-icon" />}
+                  <Text>Converting audio to subtitles</Text>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-      
-      {completed && (
-        <>
-          <Text className="result-message">File downloaded and translated successfully.</Text>
-          <Button className="open-button">Open Video File</Button>
+          
+          {completed && (
+            <>
+              <Text className="result-message">File downloaded and translated successfully.</Text>
+              <Button className="open-button">Open Video File</Button>
+            </>
+          )}
         </>
       )}
     </AppLayout>

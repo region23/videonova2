@@ -7,6 +7,10 @@ import { Channels, IElectronAPI } from '../shared/ipc-types';
  */
 contextBridge.exposeInMainWorld('electronAPI', {
   getAppVersion: () => ipcRenderer.invoke(Channels.GET_APP_VERSION),
+  // Settings methods
+  getSetting: (key) => ipcRenderer.invoke(Channels.GET_SETTING, key),
+  setSetting: (key, value) => ipcRenderer.invoke(Channels.SET_SETTING, key, value),
+  getSettings: () => ipcRenderer.invoke(Channels.GET_SETTINGS),
   // Expose other methods here
 } as IElectronAPI);
 

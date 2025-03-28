@@ -5,6 +5,7 @@
   min-height: 100vh;
   padding: 20px;
   background-color: #f0f2f5;
+  transition: background-color 0.3s ease;
 }
 
 .app-card {
@@ -12,6 +13,7 @@
   max-width: 600px;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Custom styles for form elements */
@@ -50,4 +52,27 @@
 
 .open-button {
   width: 100%;
+}
+
+/* Dark theme styles */
+body.dark-theme {
+  background-color: #141414;
+  color: #e8e8e8;
+}
+
+body.dark-theme .app-container {
+  background-color: #141414;
+}
+
+body.dark-theme .app-card {
+  background-color: #1f1f1f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+body.dark-theme .ant-typography {
+  color: #e8e8e8;
+}
+
+body.dark-theme .ant-divider {
+  border-color: #333;
 } 

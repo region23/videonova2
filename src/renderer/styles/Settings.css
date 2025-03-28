@@ -1,0 +1,57 @@
+.settings-panel {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.setting-group {
+  margin-bottom: 20px;
+  border: 1px solid #e8e8e8;
+  border-radius: 4px;
+  padding: 16px;
+}
+
+.setting-group h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #333;
+}
+
+.setting-item {
+  margin-bottom: 12px;
+}
+
+.setting-item label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.setting-item select,
+.setting-item input {
+  margin-left: 10px;
+  padding: 4px 8px;
+  width: 150px;
+}
+
+/* Dark theme styles - will be applied when body has .dark-theme class */
+body.dark-theme .settings-panel {
+  background-color: #242424;
+  color: #e8e8e8;
+}
+
+body.dark-theme .setting-group {
+  border-color: #444;
+}
+
+body.dark-theme .setting-group h3 {
+  color: #e8e8e8;
+}
+
+body.dark-theme .setting-item select,
+body.dark-theme .setting-item input {
+  background-color: #333;
+  color: #e8e8e8;
+  border: 1px solid #555;
+} 
