@@ -31,4 +31,17 @@ export interface ITranslationService {
 
 export interface ITtsService {
   synthesize(text: string, options: SynthesisOptions, outputPath: string): Promise<string>;
+}
+
+// Import and re-export interfaces from processing-interfaces.ts for backward compatibility
+import type { 
+  ISeparationService, 
+  ITimingService,
+  SeparationResult
+} from './processing-interfaces';
+
+export type {
+  ISeparationService,
+  ITimingService,
+  SeparationResult
 } 
