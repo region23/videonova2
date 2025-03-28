@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current Phase
-According to the implementation plan, we are at **Phase 0: Initialization**. The project is in early stages of setup.
+According to the implementation plan, we have completed **Phase 0: Initialization** and are now moving to **Phase 1: Backend Integration**.
 
 ## Recent Decisions
 
@@ -26,42 +26,43 @@ According to the implementation plan, we are at **Phase 0: Initialization**. The
 
 ## Current Focus
 
-The current focus is on **Project Initialization and Environment Setup** (Phase 0):
+The current focus has shifted to **Backend Integration** (Phase 1):
 
-1. Create the basic project structure with Vite and React + TypeScript
-2. Integrate Electron and configure IPC communication
-3. Set up essential dependencies
-4. Establish the development environment
+1. Create wrapper modules for external tools (yt-dlp, ffmpeg)
+2. Establish integration with online AI services (OpenAI)
+3. Define interfaces for processing services
+4. Prepare wrappers for audio processing tools (Demucs, Soundtouch)
 
 ## Next Steps
 
 The immediate next steps according to the plan are:
 
-1. **Implement Step 0.1**: Create project structure using Vite with React + TypeScript template
-2. **Implement Step 0.2**: Integrate Electron (main process, preload script, IPC setup)
-3. **Implement Step 0.3**: Install and configure core dependencies
-4. **Implement Step 0.4**: Set up IPC communication between frontend and backend
-
-After completing Phase 0, the project will move to **Phase 1: Backend Integration** focusing on creating wrapper modules for external tools (yt-dlp, ffmpeg, Demucs, Soundtouch) and AI services.
+1. **Implement Step 1.1**: Define strategy for external CLI dependencies
+2. **Implement Step 1.2**: Create yt-dlp wrapper service
+3. **Implement Step 1.3**: Create FFmpeg wrapper service
+4. **Implement Step 1.4**: Implement online AI service client (OpenAI)
+5. **Implement Step 1.5**: Define interfaces for processing services
+6. **Implement Step 1.6**: Create placeholder wrappers for Demucs & Soundtouch
+7. **Implement Step 1.7**: Expose backend services via IPC
 
 ## Active Considerations
 
-1. **Development Workflow**:
-   - How to structure the codebase for maintainability
-   - How to handle development vs. production environments
-   - Testing strategy for the complex processing pipeline
+1. **External Dependencies**:
+   - How to handle installation and packaging of external tools (ffmpeg, yt-dlp)
+   - Managing Python dependencies for Demucs and other Python-based tools
+   - Cross-platform compatibility for dependencies
 
-2. **Dependency Management**:
-   - How to package external tools with the application
-   - Version management for dependencies
-   - Handling platform-specific aspects of dependencies
+2. **API Integration**:
+   - Secure storage of API keys
+   - Error handling for API calls
+   - Rate limiting and quota management
 
-3. **User Experience**:
-   - Designing a simple yet powerful UI
-   - Providing clear progress feedback
-   - Error handling and recovery
+3. **Process Management**:
+   - Efficiently handling child processes for CLI tools
+   - Progress reporting from long-running processes
+   - Error handling and recovery from process failures
 
-4. **Performance**:
-   - Ensuring the UI remains responsive during heavy processing
-   - Optimizing media processing operations
-   - Managing resource usage for AI models 
+4. **Interface Design**:
+   - Creating flexible interfaces that support both online and offline implementations
+   - Ensuring proper type safety throughout the application
+   - Designing for future extensibility 
