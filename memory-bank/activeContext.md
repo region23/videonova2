@@ -1,7 +1,7 @@
 # Active Context
 
 ## Current Phase
-According to the implementation plan, we have completed **Phase 1: Backend Integration** and are now moving to **Phase 2: Basic UI Components**.
+According to the implementation plan, we have completed **Phase 2: Basic UI Components** and are now moving to **Phase 3: Core Processing Pipeline**.
 
 ## Recent Decisions
 
@@ -24,56 +24,49 @@ According to the implementation plan, we have completed **Phase 1: Backend Integ
    - Support for both online and offline processing
    - Caching of intermediate results
 
-4. **Backend Integration Implementation**:
-   - Successfully implemented wrapper services for external tools
-   - Created interface-based design for all processing steps
-   - Established secure IPC communication between frontend and backend
-   - Set up dependency management for external tools
+4. **UI Implementation Decisions**:
+   - Form-based input for video URL and language settings
+   - Modal dialog for API key management
+   - Settings page for theme and window size preferences
+   - Centralized status and progress display
+   - File selection using native dialog
 
 ## Current Focus
 
-The current focus has shifted to **Frontend Basic UI** (Phase 2):
+The current focus has shifted to **Core Processing Pipeline** (Phase 3):
 
-1. Design and implement the main application layout and navigation
-2. Create project management interface (create/open/save)
-3. Develop video import and preview functionality
-4. Implement basic settings UI for API keys and preferences
-5. Build transcription and translation editor interfaces
+1. Connect the backend services into a unified processing pipeline
+2. Implement job management and queuing
+3. Create progress tracking and reporting
+4. Add error handling and recovery mechanisms
+5. Optimize resource usage during processing
 
 ## Next Steps
 
 The immediate next steps according to the plan are:
 
-1. **Implement Step 2.1**: Create main application layout with navigation
-2. **Implement Step 2.2**: Develop project creation and management
-3. **Implement Step 2.3**: Build video import and preview components
-4. **Implement Step 2.4**: Create settings interface
-5. **Implement Step 2.5**: Develop transcription editor
-6. **Implement Step 2.6**: Build translation editor
-7. **Implement Step 2.7**: Create voice selection interface
+1. **Implement Step 3.1**: Create processing pipeline coordinator in main process
+2. **Implement Step 3.2**: Develop job queue management
+3. **Implement Step 3.3**: Establish robust progress reporting to UI
+4. **Implement Step 3.4**: Add logging and checkpointing
+5. **Implement Step 3.5**: Create recovery mechanisms for interrupted processes
 
 ## Active Considerations
 
 1. **User Experience**:
-   - Intuitive workflow for video processing tasks
-   - Clear progress indication for long-running operations
-   - Responsive UI that doesn't block during processing
-   - Consistent design language using Ant Design components
+   - Detailed progress indication for long-running operations
+   - Handling errors and notifying users
+   - Allowing cancelation of processes
+   - Supporting pause/resume functionality if possible
 
-2. **Project Management**:
-   - Project file format and structure
-   - Saving and loading project state
-   - Managing media assets within projects
-   - Version compatibility
-
-3. **Media Handling**:
-   - Efficient video preview mechanisms
-   - Audio visualization for transcription editing
-   - Media player controls and synchronization
+2. **Resource Management**:
    - Handling large media files efficiently
+   - Managing memory usage during processing
+   - Balancing CPU usage for simultaneous operations
+   - Disk space monitoring for intermediate outputs
 
-4. **Editor Functionality**:
-   - Word-level editing for transcriptions
-   - Segment-based translation workflow
-   - Time synchronization between video and text
-   - Voice and language selection interfaces 
+3. **Processing Pipeline**:
+   - Transaction-like approach to ensure all steps complete or roll back
+   - Intermediate file management and cleanup
+   - Proper error propagation between steps
+   - Timeouts and handling slow operations 
