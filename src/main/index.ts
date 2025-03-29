@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { Channels } from '../shared/ipc-types';
@@ -43,6 +43,18 @@ const setupIpcHandlers = () => {
   // Handler for getting app version
   ipcMain.handle(Channels.GET_APP_VERSION, () => {
     return app.getVersion();
+  });
+  
+  // File system handlers
+  ipcMain.handle(Channels.SELECT_FOLDER, async (event) => {
+    const window = BrowserWindow.fromWebContents(event.sender);
+    if (!window) {
+      return null;
+    }
+    const { canceled, filePaths } = await dialog.showOpenDialog(window, {
+      properties: ['openDirectory']
+    });
+    return canceled ? null : filePaths[0];
   });
   
   // Settings handlers

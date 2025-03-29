@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { Input, Button, Typography, Divider, Select, Checkbox } from 'antd';
+import { Button, Typography, Divider, Checkbox } from 'antd';
 import { CheckCircleFilled, SettingOutlined } from '@ant-design/icons';
 import AppLayout from './components/Layout';
 import { Settings } from './components/Settings';
+import InputForm, { FormData } from './components/InputForm';
 import './App.css';
 import './styles/Settings.css';
 
 const { Title, Text } = Typography;
-const { Option } = Select;
 
 function App() {
-  const [videoUrl, setVideoUrl] = useState('');
-  const [fromLanguage, setFromLanguage] = useState('English');
-  const [toLanguage, setToLanguage] = useState('Russian');
+  const [formData, setFormData] = useState<FormData>({
+    videoUrl: '',
+    downloadFolder: '',
+    originalLanguage: undefined,
+    targetLanguage: 'ru',
+  });
   const [processing, setProcessing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -42,8 +45,12 @@ function App() {
     loadTheme();
   }, []);
 
+  const handleFormChange = (data: FormData) => {
+    setFormData(data);
+  };
+
   const handleTranslate = () => {
-    if (!videoUrl) return;
+    if (!formData.videoUrl || !formData.downloadFolder || !formData.targetLanguage) return;
     setProcessing(true);
     
     // This would be replaced with actual API calls and processing logic
@@ -84,62 +91,33 @@ function App() {
             />
           </div>
           
-          <div className="app-input-group">
-            <Input
-              placeholder="https://www.example.com/video"
-              value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
-              style={{ width: 'calc(100% - 130px)', marginRight: '10px' }}
+          <div className="main-content">
+            <InputForm 
+              onFormChange={handleFormChange}
+              initialValues={formData}
             />
-            <Button 
-              type="primary" 
-              onClick={handleTranslate}
-              disabled={processing || !videoUrl}
-              style={{ width: '120px' }}
-            >
-              Translate
-            </Button>
+            
+            <div className="action-buttons">
+              <Button 
+                type="primary" 
+                onClick={handleTranslate}
+                disabled={processing || !formData.videoUrl || !formData.downloadFolder || !formData.targetLanguage}
+              >
+                Translate
+              </Button>
+            </div>
           </div>
-          
-          <Text strong>Translate language: {toLanguage}</Text>
           
           <Divider className="app-divider" />
           
           <div style={{ display: 'flex' }}>
-            <div style={{ flex: 1 }}>
-              <div className="app-input-group">
-                <Text>Translate from:</Text>
-                <Select 
-                  value={fromLanguage} 
-                  onChange={setFromLanguage}
-                  style={{ width: '100%', marginTop: '8px' }}
-                >
-                  <Option value="English">English</Option>
-                  <Option value="Spanish">Spanish</Option>
-                  <Option value="French">French</Option>
-                  <Option value="German">German</Option>
-                  <Option value="Chinese">Chinese</Option>
-                </Select>
-              </div>
-              
-              <div className="app-input-group">
-                <Text>Translate to:</Text>
-                <Select 
-                  value={toLanguage} 
-                  onChange={setToLanguage}
-                  style={{ width: '100%', marginTop: '8px' }}
-                >
-                  <Option value="Russian">Russian</Option>
-                  <Option value="English">English</Option>
-                  <Option value="Spanish">Spanish</Option>
-                  <Option value="French">French</Option>
-                  <Option value="German">German</Option>
-                  <Option value="Chinese">Chinese</Option>
-                </Select>
-              </div>
+            <div style={{ flex: 1, marginRight: '30px' }}>
+              <Text strong>
+                {formData.targetLanguage && `Translate to: ${formData.targetLanguage}`}
+              </Text>
             </div>
             
-            <div style={{ flex: 1, marginLeft: '30px' }}>
+            <div style={{ flex: 1 }}>
               <div className="progress-list">
                 <div className="progress-item">
                   {progress.downloadingVideo && <CheckCircleFilled className="progress-icon" />}

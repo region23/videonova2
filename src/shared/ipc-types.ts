@@ -13,6 +13,9 @@ export interface IElectronAPI {
   setSetting: <T>(key: string, value: T) => Promise<void>;
   getSettings: () => Promise<Record<string, any>>;
   
+  // File system methods
+  selectFolder: () => Promise<string | null>;
+  
   // Dependency management methods
   getDependencyPaths: () => Promise<DependencyPaths>;
   validateDependencies: () => Promise<{ valid: boolean; missing: string[] }>;
@@ -57,6 +60,9 @@ export const Channels = {
   GET_SETTING: 'ipc:get-setting',
   SET_SETTING: 'ipc:set-setting',
   GET_SETTINGS: 'ipc:get-settings',
+  
+  // File system channels
+  SELECT_FOLDER: 'ipc:select-folder',
   
   // Dependency management channels
   GET_DEPENDENCY_PATHS: 'ipc:get-dependency-paths',

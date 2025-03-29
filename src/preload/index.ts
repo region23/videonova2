@@ -13,6 +13,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setSetting: (key: string, value: any) => ipcRenderer.invoke(Channels.SET_SETTING, key, value),
   getSettings: () => ipcRenderer.invoke(Channels.GET_SETTINGS),
   
+  // File system methods
+  selectFolder: () => ipcRenderer.invoke(Channels.SELECT_FOLDER),
+  
   // Dependency management methods
   getDependencyPaths: () => ipcRenderer.invoke(Channels.GET_DEPENDENCY_PATHS),
   validateDependencies: () => ipcRenderer.invoke(Channels.VALIDATE_DEPENDENCIES),
