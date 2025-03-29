@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Typography, Divider, Checkbox, Tooltip } from 'antd';
+import { Button, Typography, Divider, Checkbox, Tooltip, Alert, Spin } from 'antd';
 import { CheckCircleFilled, SettingOutlined, KeyOutlined } from '@ant-design/icons';
 import AppLayout from './components/Layout';
 import { Settings } from './components/Settings';
@@ -18,6 +18,8 @@ function App() {
     targetLanguage: 'ru',
   });
   const [processing, setProcessing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [statusType, setStatusType] = useState<'success' | 'error' | 'info' | 'warning'>('info');
   const [showSettings, setShowSettings] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
@@ -55,7 +57,11 @@ function App() {
     if (!formData.videoUrl || !formData.downloadFolder || !formData.targetLanguage) return;
     
     try {
+      // Set processing flag and update status message
       setProcessing(true);
+      setStatusMessage('Начинаем обработку...');
+      setStatusType('info');
+      
       setProgress({ 
         downloadingVideo: false,
         downloadingAudio: false,
@@ -72,6 +78,10 @@ function App() {
       });
       
       if (result.success) {
+        // Update status message for successful start
+        setStatusMessage('Обработка начата...');
+        setStatusType('success');
+        
         // Start showing progress indicators (this would eventually be replaced with real-time updates)
         setProgress(prev => ({ ...prev, downloadingVideo: true }));
         
@@ -89,19 +99,22 @@ function App() {
               }));
               setCompleted(true);
               setProcessing(false);
+              setStatusMessage('Обработка успешно завершена!');
             }, 1000);
           }, 1000);
         }, 1000);
       } else {
-        // If there's an error from the backend, stop processing
+        // If there's an error from the backend, stop processing and show error
         setProcessing(false);
+        setStatusMessage(result.message || 'При запуске обработки произошла ошибка.');
+        setStatusType('error');
         console.error('Processing failed:', result.message);
-        // You could show an error message to the user here
       }
     } catch (error) {
       console.error('Error during processing:', error);
       setProcessing(false);
-      // Show error to user
+      setStatusMessage(`Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
+      setStatusType('error');
     }
   };
 
@@ -133,16 +146,30 @@ function App() {
           </div>
           
           <div className="main-content">
-            <InputForm 
-              onFormChange={handleFormChange}
-              initialValues={formData}
-            />
+            <Spin spinning={processing} tip="Обработка видео...">
+              <InputForm 
+                onFormChange={handleFormChange}
+                initialValues={formData}
+              />
+            </Spin>
+            
+            {statusMessage && (
+              <Alert
+                message={statusMessage}
+                type={statusType}
+                showIcon
+                style={{ marginTop: '16px', marginBottom: '16px' }}
+                closable
+                onClose={() => setStatusMessage(null)}
+              />
+            )}
             
             <div className="action-buttons">
               <Button 
                 type="primary" 
                 onClick={handleTranslate}
                 disabled={processing || !formData.videoUrl || !formData.downloadFolder || !formData.targetLanguage}
+                loading={processing}
               >
                 Translate
               </Button>
