@@ -7,6 +7,12 @@ import {
 import { FFmpegService } from '../services/ffmpegService';
 import { ytDlpService } from '../services/ytDlpService';
 
+// --- Add Node.js module imports ---
+import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs/promises';
+// --- End Node.js module imports ---
+
 // Define possible statuses for the pipeline
 type PipelineStatus = 'idle' | 'downloading' | 'extracting' | 'transcribing' | 'translating' | 'synthesizing' | 'merging' | 'completed' | 'failed';
 
@@ -74,12 +80,19 @@ export class PipelineOrchestrator {
     this._currentStep = 'Starting pipeline...';
     this._errorMessage = null;
     this._resultPath = null;
+    this._tempDir = null; // Ensure it starts as null
 
     console.log(`Starting processing for: ${this.videoUrl}`);
 
     try {
+      // --- Step 3.2: Setup Temp Directory ---
+      this._currentStep = 'Initializing temporary directory';
+      const tempDirPrefix = path.join(os.tmpdir(), 'videonova-job-');
+      this._tempDir = await fs.mkdtemp(tempDirPrefix);
+      console.log(`Created temporary directory: ${this._tempDir}`);
+      // --- End Step 3.2 ---
+
       // --- Pipeline Steps will be added here in subsequent steps ---
-      // Step 3.2: Setup Temp Directory
       // Step 3.3: Download Video
       // Step 3.4: Extract Audio
       // Step 3.5: Transcribe (STT)
@@ -96,10 +109,12 @@ export class PipelineOrchestrator {
       this._errorMessage = error instanceof Error ? error.message : String(error);
       this._currentStep = 'Pipeline failed';
       console.error(`Pipeline failed for ${this.videoUrl}: ${this._errorMessage}`, error);
-      // Ensure cleanup happens even on failure (will be added in Step 3.2)
+      // Ensure cleanup happens even on failure
     } finally {
-      // Step 3.2: Cleanup Temp Directory
-      // await this.cleanup();
+      // --- Step 3.2: Cleanup Temp Directory ---
+      this._currentStep = 'Cleaning up temporary files';
+      await this.cleanup();
+      // --- End Step 3.2 ---
     }
   }
 
@@ -109,6 +124,28 @@ export class PipelineOrchestrator {
   get errorMessage(): string | null { return this._errorMessage; }
   get resultPath(): string | null { return this._resultPath; }
 
-  // --- Private helper methods (e.g., cleanup) will be added later ---
+  // --- Private helper methods ---
+
+  /**
+   * Cleans up the temporary directory created for the job.
+   */
+  private async cleanup(): Promise<void> {
+    if (this._tempDir) {
+      console.log(`Attempting to clean up temporary directory: ${this._tempDir}`);
+      try {
+        // Check access first (optional, as rm with force handles non-existence)
+        // await fs.access(this._tempDir);
+        await fs.rm(this._tempDir, { recursive: true, force: true });
+        console.log(`Successfully removed temporary directory: ${this._tempDir}`);
+        this._tempDir = null; // Reset tempDir path after successful removal
+      } catch (cleanupError: any) {
+        // Log cleanup errors but don't let them crash the main process
+        console.error(`Error cleaning up temporary directory ${this._tempDir}: ${cleanupError.message}`, cleanupError);
+        // Keep _tempDir assigned so potential manual cleanup might be possible
+      }
+    } else {
+      console.log('No temporary directory to clean up.');
+    }
+  }
 
 } 
