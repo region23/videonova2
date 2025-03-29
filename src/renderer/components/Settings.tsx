@@ -1,4 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Card, Select, InputNumber, Button, Typography, Space, Divider, Row, Col, Spin } from 'antd';
+import { ArrowLeftOutlined } from '@ant-design/icons';
+
+const { Title, Text } = Typography;
+const { Option } = Select;
 
 interface SettingsProps {
   onClose?: () => void;
@@ -35,17 +40,18 @@ export function Settings({ onClose }: SettingsProps) {
     setTheme(newTheme);
     try {
       await window.electronAPI.setSetting('theme', newTheme);
+      // Apply theme immediately
+      document.body.className = newTheme === 'dark' ? 'dark-theme' : '';
     } catch (error) {
       console.error('Failed to save theme setting:', error);
     }
   };
 
   // Save window size settings
-  const handleSizeChange = async (dimension: 'width' | 'height', value: string) => {
-    const numValue = parseInt(value, 10);
-    if (isNaN(numValue)) return;
+  const handleSizeChange = async (dimension: 'width' | 'height', value: number | null) => {
+    if (value === null) return;
     
-    const newSize = { ...windowSize, [dimension]: numValue };
+    const newSize = { ...windowSize, [dimension]: value };
     setWindowSize(newSize);
     
     try {
@@ -56,58 +62,94 @@ export function Settings({ onClose }: SettingsProps) {
   };
 
   if (isLoading) {
-    return <div>Loading settings...</div>;
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+        <Spin size="large" tip="Loading settings..." />
+      </div>
+    );
   }
 
   return (
-    <div className="settings-panel">
-      <h2>Settings</h2>
+    <Space direction="vertical" size="large" style={{ width: '100%' }}>
+      <Row justify="space-between" align="middle">
+        <Col>
+          <Space>
+            {onClose && (
+              <Button 
+                icon={<ArrowLeftOutlined />} 
+                onClick={onClose}
+                type="text"
+                size="large"
+              />
+            )}
+            <Title level={2} style={{ margin: 0 }}>Settings</Title>
+          </Space>
+        </Col>
+      </Row>
       
-      <div className="setting-group">
-        <h3>Appearance</h3>
-        <div className="setting-item">
-          <label>
-            Theme:
-            <select 
+      <Card title="Appearance" className="content-card">
+        <Row gutter={[16, 16]} align="middle">
+          <Col span={8}>
+            <Text strong>Theme</Text>
+          </Col>
+          <Col span={16}>
+            <Select 
               value={theme} 
-              onChange={(e) => handleThemeChange(e.target.value as 'light' | 'dark')}
+              onChange={handleThemeChange}
+              style={{ width: '100%' }}
             >
-              <option value="light">Light</option>
-              <option value="dark">Dark</option>
-            </select>
-          </label>
-        </div>
-      </div>
+              <Option value="light">Light</Option>
+              <Option value="dark">Dark</Option>
+            </Select>
+          </Col>
+        </Row>
+      </Card>
       
-      <div className="setting-group">
-        <h3>Window</h3>
-        <div className="setting-item">
-          <label>
-            Width:
-            <input 
-              type="number" 
-              min={800} 
-              value={windowSize.width} 
-              onChange={(e) => handleSizeChange('width', e.target.value)}
-            />
-          </label>
-        </div>
-        <div className="setting-item">
-          <label>
-            Height:
-            <input 
-              type="number" 
-              min={600} 
-              value={windowSize.height} 
-              onChange={(e) => handleSizeChange('height', e.target.value)}
-            />
-          </label>
-        </div>
-      </div>
+      <Card title="Window" className="content-card">
+        <Space direction="vertical" style={{ width: '100%' }}>
+          <Row gutter={[16, 16]} align="middle">
+            <Col span={8}>
+              <Text strong>Width</Text>
+            </Col>
+            <Col span={16}>
+              <InputNumber 
+                min={800} 
+                value={windowSize.width} 
+                onChange={(value) => handleSizeChange('width', value)}
+                style={{ width: '100%' }}
+              />
+            </Col>
+          </Row>
+          
+          <Divider style={{ margin: '12px 0' }} />
+          
+          <Row gutter={[16, 16]} align="middle">
+            <Col span={8}>
+              <Text strong>Height</Text>
+            </Col>
+            <Col span={16}>
+              <InputNumber 
+                min={600} 
+                value={windowSize.height} 
+                onChange={(value) => handleSizeChange('height', value)}
+                style={{ width: '100%' }}
+              />
+            </Col>
+          </Row>
+        </Space>
+      </Card>
       
       {onClose && (
-        <button onClick={onClose}>Close</button>
+        <Row justify="center">
+          <Button 
+            onClick={onClose}
+            type="primary"
+            size="large"
+          >
+            Save & Close
+          </Button>
+        </Row>
       )}
-    </div>
+    </Space>
   );
 } 

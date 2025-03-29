@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Button, Typography, Divider, Checkbox, Tooltip, Alert, Spin } from 'antd';
-import { CheckCircleFilled, SettingOutlined, KeyOutlined } from '@ant-design/icons';
+import { Button, Typography, Divider, Alert, Spin, Space, Row, Col, Card } from 'antd';
+import { CheckCircleFilled, SettingOutlined, KeyOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import AppLayout from './components/Layout';
 import { Settings } from './components/Settings';
 import SettingsModal from './components/SettingsModal';
@@ -123,97 +123,129 @@ function App() {
       {showSettings ? (
         <Settings onClose={() => setShowSettings(false)} />
       ) : (
-        <>
-          <div className="app-header">
-            <Title level={2}>Language Translate</Title>
-            <div>
-              <Tooltip title="API Settings">
+        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+          {/* Header with title and settings buttons */}
+          <Row className="app-header" justify="space-between" align="middle">
+            <Col>
+              <Title level={2} style={{ margin: 0 }}>VideoNova 2</Title>
+            </Col>
+            <Col>
+              <Space>
                 <Button 
                   icon={<KeyOutlined />} 
                   onClick={() => setShowSettingsModal(true)}
                   type="text"
-                  style={{ marginRight: '8px' }}
+                  size="large"
+                  title="API Settings"
                 />
-              </Tooltip>
-              <Tooltip title="App Settings">
                 <Button 
                   icon={<SettingOutlined />} 
                   onClick={() => setShowSettings(true)}
                   type="text"
+                  size="large"
+                  title="App Settings"
                 />
-              </Tooltip>
-            </div>
-          </div>
+              </Space>
+            </Col>
+          </Row>
           
-          <div className="main-content">
-            <Spin spinning={processing} tip="Обработка видео...">
-              <InputForm 
-                onFormChange={handleFormChange}
-                initialValues={formData}
-              />
+          {/* Main content area with input form and status */}
+          <Card className="content-card">
+            <Spin spinning={processing} tip="Обработка видео..." size="large">
+              <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                <InputForm 
+                  onFormChange={handleFormChange}
+                  initialValues={formData}
+                />
+                
+                {statusMessage && (
+                  <Alert
+                    message={statusMessage}
+                    type={statusType}
+                    showIcon
+                    closable
+                    onClose={() => setStatusMessage(null)}
+                  />
+                )}
+                
+                <Row justify="center">
+                  <Button 
+                    type="primary" 
+                    onClick={handleTranslate}
+                    disabled={processing || !formData.videoUrl || !formData.downloadFolder || !formData.targetLanguage}
+                    loading={processing}
+                    size="large"
+                    style={{ minWidth: '150px' }}
+                  >
+                    Translate
+                  </Button>
+                </Row>
+              </Space>
             </Spin>
-            
-            {statusMessage && (
-              <Alert
-                message={statusMessage}
-                type={statusType}
-                showIcon
-                style={{ marginTop: '16px', marginBottom: '16px' }}
-                closable
-                onClose={() => setStatusMessage(null)}
-              />
-            )}
-            
-            <div className="action-buttons">
-              <Button 
-                type="primary" 
-                onClick={handleTranslate}
-                disabled={processing || !formData.videoUrl || !formData.downloadFolder || !formData.targetLanguage}
-                loading={processing}
-              >
-                Translate
-              </Button>
-            </div>
-          </div>
+          </Card>
           
-          <Divider className="app-divider" />
+          {/* Progress section */}
+          <Card className="progress-card">
+            <Row gutter={24}>
+              <Col xs={24} md={8}>
+                <Text strong>
+                  {formData.targetLanguage && `Translate to: ${formData.targetLanguage}`}
+                </Text>
+              </Col>
+              
+              <Col xs={24} md={16}>
+                <div className="progress-list">
+                  <div className="progress-item">
+                    {progress.downloadingVideo ? 
+                      <CheckCircleFilled className="progress-icon progress-complete" /> :
+                      <div className="progress-icon-empty" />
+                    }
+                    <Text>Downloading video</Text>
+                  </div>
+                  <div className="progress-item">
+                    {progress.downloadingAudio ? 
+                      <CheckCircleFilled className="progress-icon progress-complete" /> :
+                      <div className="progress-icon-empty" />
+                    }
+                    <Text>Downloading audio</Text>
+                  </div>
+                  <div className="progress-item">
+                    {progress.separatingSpeech ? 
+                      <CheckCircleFilled className="progress-icon progress-complete" /> :
+                      <div className="progress-icon-empty" />
+                    }
+                    <Text>Separating speech and noise</Text>
+                  </div>
+                  <div className="progress-item">
+                    {progress.convertingToSubtitles ? 
+                      <CheckCircleFilled className="progress-icon progress-complete" /> :
+                      <div className="progress-icon-empty" />
+                    }
+                    <Text>Converting audio to subtitles</Text>
+                  </div>
+                </div>
+              </Col>
+            </Row>
+          </Card>
           
-          <div style={{ display: 'flex' }}>
-            <div style={{ flex: 1, marginRight: '30px' }}>
-              <Text strong>
-                {formData.targetLanguage && `Translate to: ${formData.targetLanguage}`}
-              </Text>
-            </div>
-            
-            <div style={{ flex: 1 }}>
-              <div className="progress-list">
-                <div className="progress-item">
-                  {progress.downloadingVideo && <CheckCircleFilled className="progress-icon" />}
-                  <Text>Downloading video</Text>
-                </div>
-                <div className="progress-item">
-                  {progress.downloadingAudio && <CheckCircleFilled className="progress-icon" />}
-                  <Text>Downloading audio</Text>
-                </div>
-                <div className="progress-item">
-                  {progress.separatingSpeech && <CheckCircleFilled className="progress-icon" />}
-                  <Text>Separating speech and noise</Text>
-                </div>
-                <div className="progress-item">
-                  {progress.convertingToSubtitles && <CheckCircleFilled className="progress-icon" />}
-                  <Text>Converting audio to subtitles</Text>
-                </div>
-              </div>
-            </div>
-          </div>
-          
+          {/* Completion section */}
           {completed && (
-            <>
-              <Text className="result-message">File downloaded and translated successfully.</Text>
-              <Button className="open-button">Open Video File</Button>
-            </>
+            <Card className="completion-card">
+              <Space direction="vertical" align="center" style={{ width: '100%' }}>
+                <Text className="result-message" strong>
+                  File downloaded and translated successfully.
+                </Text>
+                <Button 
+                  type="primary" 
+                  icon={<FolderOpenOutlined />}
+                  className="open-button"
+                >
+                  Open Video File
+                </Button>
+              </Space>
+            </Card>
           )}
-        </>
+        </Space>
       )}
       
       <SettingsModal 

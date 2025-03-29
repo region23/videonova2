@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Select, Button } from 'antd';
+import { Form, Input, Select, Button, Space, Tooltip } from 'antd';
 import { LinkOutlined, FolderOpenOutlined } from '@ant-design/icons';
 import { LANGUAGES } from '../../shared/constants';
 
@@ -41,6 +41,7 @@ const InputForm: React.FC<InputFormProps> = ({ onFormChange, initialValues }) =>
       layout="vertical"
       initialValues={initialValues}
       onValuesChange={handleFormChange}
+      size="large"
     >
       <Form.Item
         name="videoUrl"
@@ -50,6 +51,7 @@ const InputForm: React.FC<InputFormProps> = ({ onFormChange, initialValues }) =>
         <Input 
           prefix={<LinkOutlined />} 
           placeholder="https://www.youtube.com/watch?v=..." 
+          allowClear
         />
       </Form.Item>
       
@@ -58,17 +60,21 @@ const InputForm: React.FC<InputFormProps> = ({ onFormChange, initialValues }) =>
         label="Download Folder"
         rules={[{ required: true, message: 'Please select a download folder' }]}
       >
-        <Input 
-          readOnly
-          placeholder="Select download folder..."
-          addonAfter={
+        <Space.Compact style={{ width: '100%' }}>
+          <Input 
+            readOnly
+            placeholder="Select download folder..."
+            value={form.getFieldValue('downloadFolder')}
+            style={{ width: 'calc(100% - 40px)' }}
+          />
+          <Tooltip title="Select folder">
             <Button 
               icon={<FolderOpenOutlined />} 
               onClick={handleFolderSelection}
-              type="text"
+              style={{ width: '40px' }}
             />
-          }
-        />
+          </Tooltip>
+        </Space.Compact>
       </Form.Item>
 
       <Form.Item
@@ -79,6 +85,8 @@ const InputForm: React.FC<InputFormProps> = ({ onFormChange, initialValues }) =>
           placeholder="Select original language"
           options={LANGUAGES}
           allowClear
+          showSearch
+          optionFilterProp="label"
         />
       </Form.Item>
 
@@ -90,6 +98,8 @@ const InputForm: React.FC<InputFormProps> = ({ onFormChange, initialValues }) =>
         <Select
           placeholder="Select target language"
           options={LANGUAGES}
+          showSearch
+          optionFilterProp="label"
         />
       </Form.Item>
     </Form>

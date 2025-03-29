@@ -1,11 +1,30 @@
 .app-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column;
   min-height: 100vh;
   padding: 20px;
   background-color: #f0f2f5;
   transition: background-color 0.3s ease;
+}
+
+.app-content {
+  flex: 1;
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px 0;
+}
+
+.app-footer {
+  text-align: center;
+  padding: 12px 0;
+  color: #888;
+  font-size: 12px;
+  margin-top: auto;
+}
+
+.app-version {
+  opacity: 0.8;
 }
 
 .app-card {
@@ -75,4 +94,22 @@ body.dark-theme .ant-typography {
 
 body.dark-theme .ant-divider {
   border-color: #333;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .app-content {
+    max-width: 800px;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-container {
+    padding: 10px;
+  }
+  
+  .app-content {
+    max-width: 100%;
+    padding: 10px 0;
+  }
 } 

@@ -54,4 +54,53 @@ body.dark-theme .setting-item input {
   background-color: #333;
   color: #e8e8e8;
   border: 1px solid #555;
+}
+
+/* Settings specific styles */
+.settings-header {
+  margin-bottom: 24px;
+}
+
+/* Dark theme overrides for Ant Design components */
+body.dark-theme .ant-card {
+  background-color: #242424;
+  color: #e8e8e8;
+  border-color: #444;
+}
+
+body.dark-theme .ant-card-head {
+  background-color: #1f1f1f;
+  color: #e8e8e8;
+  border-color: #444;
+}
+
+body.dark-theme .ant-input-number,
+body.dark-theme .ant-select:not(.ant-select-customize-input) .ant-select-selector {
+  background-color: #333;
+  color: #e8e8e8;
+  border-color: #555;
+}
+
+body.dark-theme .ant-select-dropdown {
+  background-color: #333;
+}
+
+body.dark-theme .ant-select-item {
+  color: #e8e8e8;
+}
+
+body.dark-theme .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
+  background-color: #177ddc;
+  color: #fff;
+}
+
+body.dark-theme .ant-divider {
+  border-color: #444;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .settings-header {
+    margin-bottom: 16px;
+  }
 } 
