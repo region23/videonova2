@@ -2,7 +2,8 @@ import {
   ISttService,
   ITranslationService,
   ITtsService,
-  TranscriptionResult
+  TranscriptionResult,
+  SynthesisOptions
 } from '../../shared/ai-services';
 import { FFmpegService } from '../services/ffmpegService';
 import { ytDlpService } from '../services/ytDlpService';
@@ -220,21 +221,77 @@ export class PipelineOrchestrator {
 
         // Call the Translation service
         // The service implementation (e.g., OpenAIClient) handles the API key
-        this._translatedText = await this.translationService.translate(
+        const translationResult = await this.translationService.translate(
           this._transcriptionResult.text, // Use the text from the transcription result
           this.targetLanguage,
           sourceLang // Use detected or specified source language
         );
+        this._translatedText = translationResult.translatedText; // Extract text from result object
+
         console.log('Translation completed successfully.');
         // Optional: Log a snippet of the translated text
         // console.log(`Translated text (snippet): "${this._translatedText.substring(0, 50)}..."`);
       }
       // --- End Step 3.6 ---
 
-      // Step 3.7: Synthesize (TTS)
+      // --- Step 3.7: Synthesize (TTS) ---
+      this._status = 'synthesizing';
+      this._currentStep = 'Synthesizing audio (TTS)';
+      console.log('Starting audio synthesis...');
+
+      // Prerequisites check
+      if (!this._translatedText && this._translatedText !== '') { // Allow empty string if translation resulted in empty
+        throw new Error('Cannot synthesize: Translated text is missing.');
+      }
+      if (!this.ttsService) {
+        throw new Error('Cannot synthesize: TTS service is not available.');
+      }
+      if (!this._originalVideoPath) {
+          throw new Error('Original video path is missing for TTS filename generation.');
+      }
+      if (!this._tempDir) {
+            throw new Error('Temporary directory path is missing for TTS step.');
+      }
+
+      // Handle empty translation - skip TTS if text is empty
+      if (this._translatedText === '') {
+          console.warn('Translated text is empty, skipping TTS step.');
+          this._synthesizedAudioPath = null; // Explicitly set to null as no audio was generated
+      } else {
+          // Generate filename based on original video name and target language
+          const originalBaseName = path.parse(this._originalVideoPath).name;
+          const synthesizedAudioFileName = `${originalBaseName}_audio_${this.targetLanguage}.mp3`;
+          const synthesizedOutputPath = path.join(this._tempDir, synthesizedAudioFileName);
+
+          // Choose TTS voice (hardcoded for now - consider making this configurable)
+          const ttsVoice = 'alloy'; // Example OpenAI TTS voice
+          const synthesisOptions: SynthesisOptions = {
+            voice: ttsVoice,
+            // model: 'tts-1', // Optionally specify model
+            // speed: 1.0, // Optionally specify speed
+          };
+
+          console.log(`Synthesizing audio with voice '${ttsVoice}' to: ${synthesizedOutputPath}`);
+
+          // Call the TTS service with correct arguments
+          // The service implementation (e.g., OpenAIClient) handles the API key
+          await this.ttsService.synthesize(
+              this._translatedText, // Use the translated text
+              synthesisOptions, // Pass the options object
+              synthesizedOutputPath // Pass the output path as the third argument
+          );
+
+          this._synthesizedAudioPath = synthesizedOutputPath;
+          console.log(`Synthesized audio successfully saved to: ${this._synthesizedAudioPath}`);
+      }
+      // --- End Step 3.7 ---
+
       // Step 3.8: Merge Audio/Video
 
-      this._status = 'completed';
+      // Placeholder for final status until Merge step is implemented
+      // this._status = 'merging'; // Set this before the merge step
+
+      this._status = 'completed'; // Temporarily mark as completed after TTS
       this._currentStep = 'Pipeline finished successfully';
       console.log(`Processing completed successfully. Result: ${this._resultPath}`);
 
