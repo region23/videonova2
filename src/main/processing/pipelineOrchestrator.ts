@@ -92,9 +92,67 @@ export class PipelineOrchestrator {
       console.log(`Created temporary directory: ${this._tempDir}`);
       // --- End Step 3.2 ---
 
+      // --- Step 3.3: Download Video ---
+      this._status = 'downloading';
+      this._currentStep = 'Downloading video';
+      console.log(`Fetching video info for: ${this.videoUrl}`);
+      // Get video info (we might use this later, e.g., for filename or language detection)
+      const videoInfo = await this.ytDlpServiceInstance.getVideoInfo(this.videoUrl);
+      console.log(`Video Title: ${videoInfo.title}`);
+
+      // Ensure tempDir is set before proceeding
+      if (!this._tempDir) {
+        throw new Error('Temporary directory path is not set.');
+      }
+
+      const formatCode = 'bestvideo+bestaudio/best'; // Download best quality video and audio muxed
+      // Use a sanitized title or a fixed name for the downloaded file
+      // const downloadFilename = `${videoInfo.title.replace(/[^a-z0-9_\-\. ]/gi, '_')}.mp4`; // Example sanitization
+      const downloadFilename = 'original_video.mp4'; // Using fixed name for now
+      const downloadPath = path.join(this._tempDir, downloadFilename);
+
+      console.log(`Starting video download (format: ${formatCode}) to: ${downloadPath}`);
+      // downloadMedia should return the actual path of the downloaded file
+      this._originalVideoPath = await this.ytDlpServiceInstance.downloadMedia(
+        this.videoUrl,
+        formatCode,
+        downloadPath
+        // TODO: Add progress callback later (Phase 4)
+      );
+      console.log(`Video downloaded successfully to: ${this._originalVideoPath}`);
+      // --- End Step 3.3 ---
+
+      // --- Step 3.4: Extract Audio ---
+      this._status = 'extracting';
+      this._currentStep = 'Extracting audio';
+      console.log('Starting audio extraction...');
+
+      // Prerequisites check
+      if (!this._originalVideoPath || !this._tempDir) {
+        throw new Error('Cannot extract audio: Original video path or temporary directory is not set.');
+      }
+      // Optional: Check if the original video file exists
+      try {
+        await fs.access(this._originalVideoPath);
+      } catch (e) {
+        throw new Error(`Cannot extract audio: Original video file not accessible at ${this._originalVideoPath}`);
+      }
+
+      const extractedAudioFilename = 'extracted_audio.mp3'; // Using mp3 as default based on FFmpegService defaults
+      const extractedAudioPath = path.join(this._tempDir, extractedAudioFilename);
+
+      // Call the static method from FFmpegService
+      // Note: extractAudio returns the output path upon success
+      this._extractedAudioPath = await FFmpegService.extractAudio(
+        this._originalVideoPath,
+        extractedAudioPath
+        // TODO: Add progress callback later (Phase 4)
+      );
+
+      console.log(`Audio extracted successfully to: ${this._extractedAudioPath}`);
+      // --- End Step 3.4 ---
+
       // --- Pipeline Steps will be added here in subsequent steps ---
-      // Step 3.3: Download Video
-      // Step 3.4: Extract Audio
       // Step 3.5: Transcribe (STT)
       // Step 3.6: Translate
       // Step 3.7: Synthesize (TTS)
