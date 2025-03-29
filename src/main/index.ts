@@ -9,6 +9,7 @@ import { OpenAIClient } from './services/openAiClient';
 import { SynthesisOptions } from '../shared/ai-services';
 import { DemucsService } from './services/demucsService';
 import { SoundTouchService } from './services/soundtouchService';
+import { PipelineOrchestrator } from './processing/pipelineOrchestrator';
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling
 if (require('electron-squirrel-startup')) app.quit();
@@ -173,32 +174,58 @@ const setupIpcHandlers = () => {
   });
   
   // Video processing handler
-  ipcMain.handle(Channels.START_PROCESSING, async (_event, args: { 
-    url: string; 
-    downloadFolder: string; 
-    originalLanguage?: string; 
-    targetLanguage: string; 
+  ipcMain.handle(Channels.START_PROCESSING, async (_event, args: {
+    url: string;
+    downloadFolder: string;
+    originalLanguage?: string;
+    targetLanguage: string;
   }) => {
+    console.log('Received START_PROCESSING request with args:', args);
+
+    if (!args?.url || !args?.targetLanguage || !args?.downloadFolder) {
+      console.error('Invalid arguments received for START_PROCESSING:', args);
+      return { success: false, error: 'Invalid arguments: URL, target language, and download folder are required.' };
+    }
+
+    const sourceLanguage = args.originalLanguage || 'auto';
+
+    let orchestrator: PipelineOrchestrator | null = null;
+
     try {
-      // Log the received arguments
-      console.log('Starting video processing with args:', args);
-      
-      // Get video information as first step
-      const videoInfo = await ytDlpService.getVideoInfo(args.url);
-      console.log('Video info retrieved:', videoInfo.title);
-      
-      // In a complete implementation, we would continue with the full processing pipeline here
-      // For now, just return success message
-      return { 
-        success: true, 
-        message: `Processing started for video: ${videoInfo.title}` 
-      };
-    } catch (error) {
-      console.error('Error starting video processing:', error);
-      return { 
-        success: false, 
-        message: `Error: ${error instanceof Error ? error.message : String(error)}`
-      };
+      console.log('Fetching OpenAI client...');
+      const client = await getOpenAIClient();
+      const apiKey = await getSetting<string>('openai.apiKey');
+
+      if (!apiKey) {
+        throw new Error('OpenAI API key not found in settings.');
+      }
+      console.log('Dependencies retrieved.');
+
+      console.log('Instantiating PipelineOrchestrator...');
+      orchestrator = new PipelineOrchestrator(
+        args.url,
+        sourceLanguage,
+        args.targetLanguage,
+        args.downloadFolder,
+        apiKey,
+        client,
+        client,
+        client
+      );
+      console.log('PipelineOrchestrator instantiated.');
+
+      console.log('Starting orchestrator run...');
+      await orchestrator.run();
+      console.log('Orchestrator run finished.');
+
+      const resultPath = orchestrator.resultPath;
+      console.log(`Pipeline successful. Result path: ${resultPath}`);
+      return { success: true, resultPath: resultPath };
+
+    } catch (error: any) {
+      console.error('Error during START_PROCESSING pipeline:', error);
+      const errorMessage = orchestrator?.errorMessage || (error instanceof Error ? error.message : String(error));
+      return { success: false, error: errorMessage || 'An unknown error occurred during processing.' };
     }
   });
   
