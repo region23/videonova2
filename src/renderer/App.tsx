@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Button, Typography, Divider, Checkbox } from 'antd';
-import { CheckCircleFilled, SettingOutlined } from '@ant-design/icons';
+import { Button, Typography, Divider, Checkbox, Tooltip } from 'antd';
+import { CheckCircleFilled, SettingOutlined, KeyOutlined } from '@ant-design/icons';
 import AppLayout from './components/Layout';
 import { Settings } from './components/Settings';
+import SettingsModal from './components/SettingsModal';
 import InputForm, { FormData } from './components/InputForm';
 import './App.css';
 import './styles/Settings.css';
@@ -18,6 +19,7 @@ function App() {
   });
   const [processing, setProcessing] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [progress, setProgress] = useState({
     downloadingVideo: false,
@@ -84,11 +86,23 @@ function App() {
         <>
           <div className="app-header">
             <Title level={2}>Language Translate</Title>
-            <Button 
-              icon={<SettingOutlined />} 
-              onClick={() => setShowSettings(true)}
-              type="text"
-            />
+            <div>
+              <Tooltip title="API Settings">
+                <Button 
+                  icon={<KeyOutlined />} 
+                  onClick={() => setShowSettingsModal(true)}
+                  type="text"
+                  style={{ marginRight: '8px' }}
+                />
+              </Tooltip>
+              <Tooltip title="App Settings">
+                <Button 
+                  icon={<SettingOutlined />} 
+                  onClick={() => setShowSettings(true)}
+                  type="text"
+                />
+              </Tooltip>
+            </div>
           </div>
           
           <div className="main-content">
@@ -147,6 +161,11 @@ function App() {
           )}
         </>
       )}
+      
+      <SettingsModal 
+        visible={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+      />
     </AppLayout>
   );
 }
