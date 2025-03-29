@@ -152,8 +152,48 @@ export class PipelineOrchestrator {
       console.log(`Audio extracted successfully to: ${this._extractedAudioPath}`);
       // --- End Step 3.4 ---
 
+      // --- Step 3.5: Transcribe (STT) ---
+      this._status = 'transcribing';
+      this._currentStep = 'Transcribing audio (STT)';
+      console.log(`Starting transcription for language: ${this.sourceLanguage}...`);
+
+      // Prerequisites check
+      if (!this._extractedAudioPath) {
+        throw new Error('Cannot transcribe: Extracted audio path is not set.');
+      }
+      try {
+        await fs.access(this._extractedAudioPath);
+      } catch (e) {
+        throw new Error(`Cannot transcribe: Extracted audio file not accessible at ${this._extractedAudioPath}`);
+      }
+      if (!this.sttService) {
+        throw new Error('Cannot transcribe: STT service is not available.');
+      }
+
+      // Call the STT service
+      // The service implementation (e.g., OpenAIClient) handles the API key
+      this._transcriptionResult = await this.sttService.transcribe(
+        this._extractedAudioPath,
+        this.sourceLanguage
+      );
+
+      console.log('Transcription completed successfully.');
+      // Log detected language if available in the result
+      if (this._transcriptionResult?.language) {
+        console.log(`Detected audio language: ${this._transcriptionResult.language}`);
+        // Optionally, update sourceLanguage if auto-detection was used and successful?
+        // if (this.sourceLanguage === 'auto' && this._transcriptionResult.language) {
+        //   this.sourceLanguage = this._transcriptionResult.language;
+        // }
+      }
+      if (!this._transcriptionResult?.text) {
+        console.warn('Transcription result seems empty.');
+        // Decide if this should be an error or just proceed
+      }
+
+      // --- End Step 3.5 ---
+
       // --- Pipeline Steps will be added here in subsequent steps ---
-      // Step 3.5: Transcribe (STT)
       // Step 3.6: Translate
       // Step 3.7: Synthesize (TTS)
       // Step 3.8: Merge Audio/Video
