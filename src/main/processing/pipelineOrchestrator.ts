@@ -6,7 +6,7 @@ import {
   SynthesisOptions
 } from '../../shared/ai-services';
 import { FFmpegService } from '../services/ffmpegService';
-import { ytDlpService } from '../services/ytDlpService';
+import { ytDlpService, YtDlpVideoInfo } from '../services/ytDlpService';
 
 // --- Add Node.js module imports ---
 import * as os from 'os';
@@ -46,6 +46,7 @@ export class PipelineOrchestrator {
   private _transcriptionResult: TranscriptionResult | null = null; // Use the imported TranscriptionResult type
   private _translatedText: string | null = null; // To be added in Step 3.6
   private _synthesizedAudioPath: string | null = null; // To be added in Step 3.7
+  private _videoInfo: YtDlpVideoInfo | null = null; // Store video info
 
   constructor(
     videoUrl: string,
@@ -71,6 +72,9 @@ export class PipelineOrchestrator {
     if (!this.outputFolderPath) throw new Error("Output folder path is required.");
     if (!this.apiKey) throw new Error("API key is required.");
     // Add more validation as needed
+
+    this._tempDir = null; // Ensure it starts as null
+    this._videoInfo = null; // Initialize video info
   }
 
   /**
@@ -97,9 +101,9 @@ export class PipelineOrchestrator {
       this._status = 'downloading';
       this._currentStep = 'Downloading video';
       console.log(`Fetching video info for: ${this.videoUrl}`);
-      // Get video info (we might use this later, e.g., for filename or language detection)
-      const videoInfo = await this.ytDlpServiceInstance.getVideoInfo(this.videoUrl);
-      console.log(`Video Title: ${videoInfo.title}`);
+      // Get video info and store it in the class property
+      this._videoInfo = await this.ytDlpServiceInstance.getVideoInfo(this.videoUrl);
+      console.log(`Video Title: ${this._videoInfo.title}`);
 
       // Ensure tempDir is set before proceeding
       if (!this._tempDir) {
@@ -108,7 +112,7 @@ export class PipelineOrchestrator {
 
       const formatCode = 'bestvideo+bestaudio/best'; // Download best quality video and audio muxed
       // Use a sanitized title or a fixed name for the downloaded file
-      // const downloadFilename = `${videoInfo.title.replace(/[^a-z0-9_\-\. ]/gi, '_')}.mp4`; // Example sanitization
+      // const downloadFilename = `${this._videoInfo.title.replace(/[^a-z0-9_\-\. ]/gi, '_')}.mp4`; // Example sanitization
       const downloadFilename = 'original_video.mp4'; // Using fixed name for now
       const downloadPath = path.join(this._tempDir, downloadFilename);
 
@@ -286,14 +290,77 @@ export class PipelineOrchestrator {
       }
       // --- End Step 3.7 ---
 
-      // Step 3.8: Merge Audio/Video
+      // --- Step 3.8: Merge Audio/Video ---
+      this._status = 'merging';
+      this._currentStep = 'Merging final video';
+      console.log('Starting final video merge/copy...');
 
-      // Placeholder for final status until Merge step is implemented
-      // this._status = 'merging'; // Set this before the merge step
+      // Prerequisites check
+      if (!this._originalVideoPath) {
+        throw new Error('Cannot merge: Original video path is missing.');
+      }
+      if (!this.outputFolderPath) {
+        throw new Error('Cannot merge: Output folder path is missing.');
+      }
 
-      this._status = 'completed'; // Temporarily mark as completed after TTS
+      // Ensure output directory exists
+      try {
+        await fs.mkdir(this.outputFolderPath, { recursive: true });
+        console.log(`Ensured output directory exists: ${this.outputFolderPath}`);
+      } catch (dirError) {
+        throw new Error(`Failed to create output directory '${this.outputFolderPath}': ${dirError}`);
+      }
+
+      // Generate final filename
+      let baseFilename = 'processed_video'; // Default/fallback filename base
+      if (this._videoInfo?.title) {
+        baseFilename = this._videoInfo.title.replace(/[/\\?%*:|"<>\.]/g, '_').substring(0, 100); // Sanitize and limit length
+      } else {
+        console.warn('Original video title not found, using generic filename.');
+      }
+      const finalFilename = `${baseFilename}_translated_to_${this.targetLanguage}.mp4`;
+      const finalOutputPath = path.join(this.outputFolderPath, finalFilename);
+
+      console.log(`Final output will be saved to: ${finalOutputPath}`);
+
+      // Perform merge or copy based on whether TTS produced audio
+      if (this._synthesizedAudioPath) {
+        console.log('Merging original video with synthesized audio...');
+        try {
+          // Check if synthesized audio file exists before merging
+          await fs.access(this._synthesizedAudioPath);
+          
+          // Call FFmpeg merge
+          this._resultPath = await FFmpegService.mergeAudioVideo(
+            this._originalVideoPath,
+            this._synthesizedAudioPath,
+            finalOutputPath
+            // No progress callback for now (Phase 4)
+          );
+          console.log('Video and synthesized audio merged successfully.');
+        } catch (mergeError) {
+          // Add specific check if audio file access failed (type-safe)
+          if (mergeError instanceof Error && 'code' in mergeError && mergeError.code === 'ENOENT') {
+             throw new Error(`Synthesized audio file not found at ${this._synthesizedAudioPath}`);
+          }
+          throw new Error(`Failed to merge video and audio: ${mergeError instanceof Error ? mergeError.message : mergeError}`);
+        }
+      } else {
+        console.log('Synthesized audio not found (TTS likely skipped), copying original video...');
+        try {
+          await fs.copyFile(this._originalVideoPath, finalOutputPath);
+          this._resultPath = finalOutputPath;
+          console.log('Original video copied successfully to output folder.');
+        } catch (copyError) {
+          throw new Error(`Failed to copy original video to output folder: ${copyError instanceof Error ? copyError.message : copyError}`);
+        }
+      }
+      // --- End Step 3.8 ---
+
+      // Final success state update
+      this._status = 'completed';
       this._currentStep = 'Pipeline finished successfully';
-      console.log(`Processing completed successfully. Result: ${this._resultPath}`);
+      console.log(`Processing completed successfully. Result saved to: ${this._resultPath}`);
 
     } catch (error: any) {
       this._status = 'failed';
