@@ -51,31 +51,58 @@ function App() {
     setFormData(data);
   };
 
-  const handleTranslate = () => {
+  const handleTranslate = async () => {
     if (!formData.videoUrl || !formData.downloadFolder || !formData.targetLanguage) return;
-    setProcessing(true);
     
-    // This would be replaced with actual API calls and processing logic
-    // Simulating the process for demo purposes
-    setTimeout(() => {
-      setProgress({ ...progress, downloadingVideo: true });
-      setTimeout(() => {
-        setProgress({ ...progress, downloadingVideo: true, downloadingAudio: true });
+    try {
+      setProcessing(true);
+      setProgress({ 
+        downloadingVideo: false,
+        downloadingAudio: false,
+        separatingSpeech: false,
+        convertingToSubtitles: false 
+      });
+      
+      // Call the IPC method to start processing
+      const result = await window.electronAPI.startProcessing({
+        url: formData.videoUrl,
+        downloadFolder: formData.downloadFolder,
+        originalLanguage: formData.originalLanguage,
+        targetLanguage: formData.targetLanguage
+      });
+      
+      if (result.success) {
+        // Start showing progress indicators (this would eventually be replaced with real-time updates)
+        setProgress(prev => ({ ...prev, downloadingVideo: true }));
+        
+        // For demo purposes, continue with the simulated progress
         setTimeout(() => {
-          setProgress({ ...progress, downloadingVideo: true, downloadingAudio: true, separatingSpeech: true });
+          setProgress(prev => ({ ...prev, downloadingAudio: true }));
           setTimeout(() => {
-            setProgress({
-              downloadingVideo: true,
-              downloadingAudio: true,
-              separatingSpeech: true,
-              convertingToSubtitles: true
-            });
-            setCompleted(true);
-            setProcessing(false);
+            setProgress(prev => ({ ...prev, separatingSpeech: true }));
+            setTimeout(() => {
+              setProgress(prev => ({
+                downloadingVideo: true,
+                downloadingAudio: true,
+                separatingSpeech: true,
+                convertingToSubtitles: true
+              }));
+              setCompleted(true);
+              setProcessing(false);
+            }, 1000);
           }, 1000);
         }, 1000);
-      }, 1000);
-    }, 1000);
+      } else {
+        // If there's an error from the backend, stop processing
+        setProcessing(false);
+        console.error('Processing failed:', result.message);
+        // You could show an error message to the user here
+      }
+    } catch (error) {
+      console.error('Error during processing:', error);
+      setProcessing(false);
+      // Show error to user
+    }
   };
 
   return (

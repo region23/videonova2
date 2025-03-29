@@ -52,6 +52,14 @@ export interface IElectronAPI {
   
   // SoundTouch methods
   adjustTiming: (audioPath: string, factor: number, outputPath: string) => Promise<string>;
+  
+  // Video processing methods
+  startProcessing: (args: { 
+    url: string; 
+    downloadFolder: string; 
+    originalLanguage?: string; 
+    targetLanguage: string; 
+  }) => Promise<{ success: boolean; message: string }>;
 }
 
 export const Channels = {
@@ -92,6 +100,9 @@ export const Channels = {
   
   // SoundTouch channels
   ADJUST_TIMING: 'ipc:adjust-timing',
+  
+  // Video processing channels
+  START_PROCESSING: 'ipc:start-processing',
 } as const; // Use const assertion for type safety
 
 // Type for channel names to ensure type safety when using channels

@@ -172,6 +172,36 @@ const setupIpcHandlers = () => {
     return soundTouchService.adjustTiming(audioPath, factor, outputPath);
   });
   
+  // Video processing handler
+  ipcMain.handle(Channels.START_PROCESSING, async (_event, args: { 
+    url: string; 
+    downloadFolder: string; 
+    originalLanguage?: string; 
+    targetLanguage: string; 
+  }) => {
+    try {
+      // Log the received arguments
+      console.log('Starting video processing with args:', args);
+      
+      // Get video information as first step
+      const videoInfo = await ytDlpService.getVideoInfo(args.url);
+      console.log('Video info retrieved:', videoInfo.title);
+      
+      // In a complete implementation, we would continue with the full processing pipeline here
+      // For now, just return success message
+      return { 
+        success: true, 
+        message: `Processing started for video: ${videoInfo.title}` 
+      };
+    } catch (error) {
+      console.error('Error starting video processing:', error);
+      return { 
+        success: false, 
+        message: `Error: ${error instanceof Error ? error.message : String(error)}`
+      };
+    }
+  });
+  
   // Add other handlers here
 };
 

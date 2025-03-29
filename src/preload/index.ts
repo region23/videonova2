@@ -57,6 +57,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // SoundTouch methods
   adjustTiming: (audioPath: string, factor: number, outputPath: string) => 
     ipcRenderer.invoke(Channels.ADJUST_TIMING, audioPath, factor, outputPath),
+    
+  // Video processing methods
+  startProcessing: (args: { url: string; downloadFolder: string; originalLanguage?: string; targetLanguage: string }) => 
+    ipcRenderer.invoke(Channels.START_PROCESSING, args),
 } as IElectronAPI);
 
 // For security reasons, we don't expose the entire ipcRenderer object
