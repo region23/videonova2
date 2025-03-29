@@ -193,8 +193,44 @@ export class PipelineOrchestrator {
 
       // --- End Step 3.5 ---
 
-      // --- Pipeline Steps will be added here in subsequent steps ---
-      // Step 3.6: Translate
+      // --- Step 3.6: Translate ---
+      this._status = 'translating';
+      this._currentStep = 'Translating text';
+      console.log(`Starting translation to target language: ${this.targetLanguage}...`);
+
+      // Prerequisites check
+      if (!this.translationService) {
+        throw new Error('Cannot translate: Translation service is not available.');
+      }
+      if (!this._transcriptionResult?.text) {
+        // Decide how to handle empty transcription: error or skip translation?
+        // For now, let's throw an error if transcription is null, but warn if text is empty
+        if (this._transcriptionResult === null) {
+          throw new Error('Cannot translate: Transcription result is missing.');
+        } else {
+          console.warn('Transcription text is empty, skipping translation.');
+          this._translatedText = ''; // Set translated text to empty
+        }
+      } else {
+         // Ensure source language is defined (it might be auto-detected in STT)
+         const sourceLang = this._transcriptionResult.language || this.sourceLanguage;
+         if (!sourceLang) {
+            throw new Error('Cannot translate: Source language is unknown.');
+         }
+
+        // Call the Translation service
+        // The service implementation (e.g., OpenAIClient) handles the API key
+        this._translatedText = await this.translationService.translate(
+          this._transcriptionResult.text, // Use the text from the transcription result
+          this.targetLanguage,
+          sourceLang // Use detected or specified source language
+        );
+        console.log('Translation completed successfully.');
+        // Optional: Log a snippet of the translated text
+        // console.log(`Translated text (snippet): "${this._translatedText.substring(0, 50)}..."`);
+      }
+      // --- End Step 3.6 ---
+
       // Step 3.7: Synthesize (TTS)
       // Step 3.8: Merge Audio/Video
 
